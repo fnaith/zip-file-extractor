@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
@@ -67,7 +68,7 @@ public class ZipFileExtractor {
     }
 
     private static JFileChooser buildJFileChooser() {
-        final var fileChooser = new JFileChooser();
+        final var fileChooser = new JFileChooser(Paths.get("").toAbsolutePath().toFile());
         final var zipFilter = new FileNameExtensionFilter("Zip files (*.zip,*.jar)", "zip", "jar");
         fileChooser.setFileFilter(zipFilter);
         fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
