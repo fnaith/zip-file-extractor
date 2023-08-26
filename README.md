@@ -4,4 +4,4 @@
 
 # Screenshot
 
-![image](https://github.com/fnaith/zip-file-extractor/blon/master/screenshot.png)
+![image](https://github.com/fnaith/zip-file-extractor/blob/main/screenshot.png)
