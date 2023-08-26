@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+}
+
+group 'com.ongakucraft'
+version '1.0-SNAPSHOT'
+
+sourceCompatibility = 1.17
+targetCompatibility = 1.17
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.scijava:swing-checkbox-tree:1.0.2'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.ongakucraft.app.ZipFileExtractor'
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
