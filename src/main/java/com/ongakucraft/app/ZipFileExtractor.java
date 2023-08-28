@@ -8,9 +8,9 @@ import java.nio.file.Paths;
 
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
-public class ZipFileExtractor {
-    private static FileTree fileTree = null;
-    private static JButton exportButton = null;
+public final class ZipFileExtractor {
+    private static FileTree fileTree;
+    private static JButton exportButton;
 
     public static void main(String[] args) {
         final var charset = StandardCharsets.ISO_8859_1;
@@ -41,7 +41,7 @@ public class ZipFileExtractor {
 
                 exportButton = new JButton("Extract Selected Files");
                 exportButton.addActionListener(exportEvent -> {
-                    if (fileTree.getExportedFilePathList().isEmpty()) {
+                    if (!fileTree.hasCheckedFilePath()) {
                         JOptionPane.showMessageDialog(frame, "No file selected !");
                         return;
                     }

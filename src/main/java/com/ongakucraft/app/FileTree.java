@@ -19,13 +19,12 @@ import java.util.List;
 import java.util.*;
 import java.util.zip.ZipFile;
 
-public class FileTree extends JPanel {
+public final class FileTree extends JPanel {
     private final Map<String, List<String>> childrenMap = new HashMap<>();
     private final Map<String, Boolean> checkedMap = new HashMap<>();
 
     public FileTree(String zipFilePath, Charset charset) {
         initFileStructure(zipFilePath, charset);
-
         setLayout(new BorderLayout());
 
         final var treeModel = new DefaultTreeModel(addNodes(null, "/"));
@@ -45,8 +44,7 @@ public class FileTree extends JPanel {
                 for (final var path : e.getPath()) {
                     final var node = (DefaultMutableTreeNode) path;
                     final var data = (CheckBoxNodeData) node.getUserObject();
-                    sb.append(data.getText());
-                    sb.append('/');
+                    sb.append(data.getText()).append('/');
                 }
                 final var dirPath = sb.toString();
                 if (null != e.getChildren()) {
@@ -100,27 +98,26 @@ public class FileTree extends JPanel {
         }
     }
 
+    public boolean hasCheckedFilePath() {
+        return checkedMap.values().stream().anyMatch(Boolean::valueOf);
+    }
+
     private void initFileStructure(String zipFilePath, Charset charset) {
         childrenMap.put("/", new ArrayList<>());
-        final Map<String, String> parentMap = new HashMap<>();
         try (final var zipFile = new ZipFile(zipFilePath, charset)) {
             final var zipEntries = zipFile.entries();
             while (zipEntries.hasMoreElements()) {
-                String filePath = '/' + zipEntries.nextElement().getName();
-                final var isDir = filePath.endsWith("/");
-                if (isDir) {
-                    final var tmpPath = filePath.substring(0, filePath.length() - 1);
-                    final var pos = tmpPath.lastIndexOf('/');
-                    final var parent = tmpPath.substring(0, pos + 1);
-                    parentMap.put(filePath, parent);
+                final var filePath = '/' + zipEntries.nextElement().getName();
+                final String normalizedFilePath;
+                if (filePath.endsWith("/")) {
+                    normalizedFilePath = filePath.substring(0, filePath.length() - 1);
                     childrenMap.put(filePath, new ArrayList<>());
-                    childrenMap.get(parent).add(filePath);
                 } else {
-                    final var pos = filePath.lastIndexOf('/');
-                    final var parent = filePath.substring(0, pos + 1);
-                    parentMap.put(filePath, parent);
-                    childrenMap.get(parent).add(filePath);
+                    normalizedFilePath = filePath;
                 }
+                final var pos = normalizedFilePath.lastIndexOf('/');
+                final var parent = normalizedFilePath.substring(0, pos + 1);
+                childrenMap.get(parent).add(filePath);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -142,11 +139,8 @@ public class FileTree extends JPanel {
         final List<String> subFolders = new ArrayList<>();
         final List<String> subFiles = new ArrayList<>();
         for (final var child : childrenMap.get(dir)) {
-            if (childrenMap.containsKey(child)) {
-                subFolders.add(child);
-            } else {
-                subFiles.add(child);
-            }
+            final var list = isFolder(child) ? subFolders : subFiles;
+            list.add(child);
         }
         for (final var subFolder : subFolders) {
             addNodes(node, subFolder);
@@ -157,8 +151,9 @@ public class FileTree extends JPanel {
         return node;
     }
 
-    public List<String> getExportedFilePathList() {
+    private List<String> getExportedFilePathList() {
         final List<String> filePathList = new ArrayList<>();
+        final Set<String> visited = new HashSet<>();
         final Deque<String> queue = new ArrayDeque<>();
         for (final var entry : checkedMap.entrySet()) {
             if (entry.getValue()) {
@@ -167,13 +162,20 @@ public class FileTree extends JPanel {
         }
         while (!queue.isEmpty()) {
             final var filePath = queue.poll();
-            if (childrenMap.containsKey(filePath)) {
+            if (!visited.add(filePath)) {
+                continue;
+            }
+            if (isFolder(filePath)) {
                 queue.addAll(childrenMap.get(filePath));
             } else {
                 filePathList.add(filePath);
             }
         }
         return filePathList;
+    }
+
+    private boolean isFolder(String filePath) {
+        return childrenMap.containsKey(filePath);
     }
 
     private static String getName(String path) {

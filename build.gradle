@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.ongakucraft'
-version '1.0.1-SNAPSHOT'
+version '1.0.2-SNAPSHOT'
 
 sourceCompatibility = 1.17
 targetCompatibility = 1.17
